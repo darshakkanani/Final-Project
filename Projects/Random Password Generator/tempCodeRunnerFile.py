@@ -1,0 +1,1 @@
+    password = ''.join(random.choice(mix) for i in range(length))
