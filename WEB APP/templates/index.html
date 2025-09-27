@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Resizer - Smart Image Processing</title>
+    <title>Image Resizer & Hair Removal - Smart Image Processing</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
@@ -16,12 +16,12 @@
                 <span class="control maximize"></span>
                 <span class="control close"></span>
             </div>
-            <h1 class="app-title"> Image Resizer</h1>
+            <h1 class="app-title">Image Resizer & Hair Removal - Smart Image Processing</h1>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
-            <h1 class="page-title">Smart Image Resizing</h1>
+            <h1 class="page-title">Smart Image Processing</h1>
             
             <!-- Upload Section -->
             <div class="section upload-section">
@@ -33,23 +33,23 @@
                         <input type="text" id="file-display" placeholder="No file selected" readonly>
                         <button type="button" id="choose-btn" onclick="document.getElementById('file-input').click()">Choose</button>
                     </div>
-                    <button type="button" id="start-btn" onclick="processImage()">Resize Image</button>
+                    <button type="button" id="start-btn" onclick="processImage()">Process Image</button>
                     
                     <!-- Loading indicator -->
                     <div id="loading" class="loading" style="display: none;">
                         <div class="spinner"></div>
-                        <p>Resizing image...</p>
+                        <p>Processing image: Resizing → Hair Removal → Enhancement...</p>
                     </div>
                 </div>
             </div>
 
             <!-- Results Section -->
             <div class="section results-section">
-                <h2 class="section-title">Results</h2>
+                <h2 class="section-title">Processing Results</h2>
                 <div class="section-content">
                     <!-- Image display area -->
                     <div id="image-display" class="image-display" style="display: none;">
-                        <div class="image-comparison">
+                        <div class="image-comparison-grid">
                             <div class="image-item">
                                 <h4>Original Image</h4>
                                 <img id="original-image" src="" alt="Original image">
@@ -59,6 +59,21 @@
                                 <h4>Resized Image (380x380)</h4>
                                 <img id="resized-image" src="" alt="Resized image">
                                 <p id="resize-info" class="image-info"></p>
+                            </div>
+                            <div class="image-item">
+                                <h4>Hair Removed</h4>
+                                <img id="processed-image" src="" alt="Hair removed image">
+                                <p id="processed-info" class="image-info"></p>
+                                <div id="quality-info" class="quality-info"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Download Section -->
+                        <div class="download-section">
+                            <h4>Download Results</h4>
+                            <div class="download-buttons">
+                                <a id="download-resized" href="#" download class="download-btn">Download Resized</a>
+                                <a id="download-processed" href="#" download class="download-btn primary">Download Hair Removed</a>
                             </div>
                         </div>
                     </div>
@@ -71,7 +86,7 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p> 2024 Image Resizer - Smart Image Processing</p>
+            <p> 2024 Image Resizer & Hair Removal - Smart Image Processing</p>
         </div>
     </div>
 
@@ -111,13 +126,35 @@
                 document.getElementById('loading').style.display = 'none';
 
                 if (result.success) {
-                    // Display both original and resized images
+                    // Display all three images
                     document.getElementById('original-image').src = result.original_image;
                     document.getElementById('resized-image').src = result.resized_image;
+                    document.getElementById('processed-image').src = result.processed_image;
+                    
+                    // Update image info
                     document.getElementById('original-info').textContent = 
                         `Size: ${result.original_size}`;
                     document.getElementById('resize-info').textContent = 
-                        `Size: ${result.resized_size} (Resized)`;
+                        `Size: ${result.resized_size}`;
+                    document.getElementById('processed-info').textContent = 
+                        `Size: ${result.resized_size} (Hair Removed)`;
+                    
+                    // Update quality info
+                    const qualityInfo = document.getElementById('quality-info');
+                    const psnr = parseFloat(result.psnr);
+                    const qualityColor = psnr > 30 ? '#4CAF50' : psnr > 25 ? '#FF9800' : '#F44336';
+                    qualityInfo.innerHTML = `
+                        <div style="color: ${qualityColor}; font-weight: bold;">
+                            Quality: ${result.processing_quality} (PSNR: ${psnr.toFixed(1)} dB)
+                        </div>
+                    `;
+                    
+                    // Setup download links
+                    document.getElementById('download-resized').href = result.resized_image;
+                    document.getElementById('download-processed').href = result.processed_image;
+                    document.getElementById('download-resized').download = 'resized_image.jpg';
+                    document.getElementById('download-processed').download = 'hair_removed_image.jpg';
+                    
                     document.getElementById('image-display').style.display = 'block';
                 } else {
                     // Display error
